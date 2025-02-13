@@ -2,10 +2,20 @@ import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 import iziToast from 'izitoast';
 import 'izitoast/dist/css/iziToast.min.css';
+const lightbox = new SimpleLightbox('.gallery a');
 
-export function renderImages(images) {
-  const gallery = document.querySelector('.gallery');
-  gallery.innerHTML = images
+export const renderImages = (images, gallery) => {
+  gallery.innerHTML = '';
+  if (images.length === 0) {
+    iziToast.error({
+      title: 'Error',
+      message:
+        'Sorry, there are no images matching your search query. Please try again!',
+    });
+    return;
+  }
+
+  const markup = images
     .map(
       ({
         webformatURL,
@@ -15,32 +25,23 @@ export function renderImages(images) {
         views,
         comments,
         downloads,
-      }) => `
-      <div class="photo-card">
-        <a href="${largeImageURL}">
+      }) => {
+        return `
+        <a href="${largeImageURL}" class="gallery__item">
           <img src="${webformatURL}" alt="${tags}" loading="lazy" />
+          <div class="info">
+            <p class="info-item"><b>Likes:</b> ${likes}</p>
+            <p class="info-item"><b>Views:</b> ${views}</p>
+            <p class="info-item"><b>Comments:</b> ${comments}</p>
+            <p class="info-item"><b>Downloads:</b> ${downloads}</p>
+          </div>
         </a>
-        <div class="info">
-          <p><b>Likes</b>: ${likes}</p>
-          <p><b>Views</b>: ${views}</p>
-          <p><b>Comments</b>: ${comments}</p>
-          <p><b>Downloads</b>: ${downloads}</p>
-        </div>
-      </div>
-    `
+      `;
+      }
     )
     .join('');
-  const lightbox = new SimpleLightbox('.gallery a');
+
+  gallery.insertAdjacentHTML('beforeend', markup);
+
   lightbox.refresh();
-}
-
-export function showNotification(message, type = 'info') {
-  iziToast[type]({
-    message,
-    position: 'topRight',
-  });
-}
-
-export function clearGallery() {
-  document.querySelector('.gallery').innerHTML = '';
-}
+};
